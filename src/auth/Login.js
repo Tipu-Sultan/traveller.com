@@ -1,7 +1,8 @@
-// pages/Login.js
 import React, { useState } from 'react';
+import { useDispatch } from 'react-redux';
 import AuthLayout from '../components/AuthLayouts';
 import { Link } from 'react-router-dom';
+import { login } from '../redux/slices/authSlices';
 
 const Login = () => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -12,14 +13,21 @@ const Login = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleSubmit = (e) => {
+  const dispatch = useDispatch();
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.email || !formData.password) {
       setError('Please fill in both fields');
       return;
     }
     setError('');
-    // Send form data to server here
+
+    try {
+      await dispatch(login(formData)).unwrap();
+    } catch (err) {
+      setError(err.message); 
+    }
   };
 
   return (

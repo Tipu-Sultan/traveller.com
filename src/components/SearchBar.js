@@ -1,21 +1,41 @@
-// components/SearchBar.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useDispatch } from 'react-redux';
+import { search } from '../redux/slices/searchSlice';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { closeSnackbar, enqueueSnackbar } from 'notistack';
 
-const SearchBar = ({ onSearch }) => {
+const SearchBar = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
   const [query, setQuery] = useState('');
 
+  // Function to handle the search action
   const handleSearch = () => {
-    if (query.trim() !== '') {
-      onSearch(query);
-      setQuery(''); // Clear the input after search
+    if (query.trim()) {
+      navigate(`/search?query=${encodeURIComponent(query)}`);
+      setQuery(''); // Clear the input field
     }
   };
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter') {
-      handleSearch(); // Trigger search on Enter key
+      handleSearch();
     }
   };
+
+  useEffect(() => {
+    try {
+    const searchParams = new URLSearchParams(location.search);
+    const queryParam = searchParams.get('query');
+    if (queryParam) {
+      setQuery(queryParam); // Set the query state
+      dispatch(search(queryParam)); // Dispatch the search action
+    }
+    } catch (error) {
+      enqueueSnackbar(error.error || 'Failed to register crime', {variant: 'error',});
+    }
+  }, [location.search, dispatch]); // Re-run effect if the search query in the URL changes
 
   return (
     <div className="flex justify-center mt-6">
